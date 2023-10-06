@@ -104,8 +104,8 @@ CREATE TABLE imparte (
 dni CHAR(10), 
 asignatura CHAR(5),
 PRIMARY KEY (dni, asignatura),
-FOREIGN KEY (dni) REFERENCES profesores (dni),
-FOREIGN KEY (asignatura) REFERENCES asignaturas (codigo)
+FOREIGN KEY (dni) REFERENCES profesores (dni)ON DELETE CASCADE ON UPDATE CASCADE,
+FOREIGN KEY (asignatura) REFERENCES asignaturas (codigo)ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 ------------------------------------------------------------------------------------ 
 
