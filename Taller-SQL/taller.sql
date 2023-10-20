@@ -89,11 +89,29 @@ FROM camara
 JOIN articulo ON camara.cod = articulo.cod
 WHERE articulo.cod ; 
 
+-- 17- Código, nombre, tipo y marca de las cámaras de marca Nikon, LG o Sigma.
+SELECT camara.cod , articulo.nombre , articulo.marca 
+FROM camara 
+JOIN articulo ON camara.cod = articulo.cod
+WHERE articulo.marca IN ('Nikon', 'LG' , 'Sigma');
+
+-- 18- Código, nombre y pvp de la cámara más cara de entre las de tipo réflex.
+SELECT camara.cod , articulo.nombre , articulo.pvp 
+
+-- SIN SOLUCIONAR 
+
+-- 19- Marcas de las que no existe ningún televisor en nuestra base de datos.
+
+
 -- 22- Tipo	y	focal	de	los	objetivos	que	se	monten	en	una	cámara	Canon	sea	cual	sea	el	
 -- modelo.
 SELECT objetivo.tipo, objetivo.focal
 FROM objetivo
 WHERE objetivo.montura LIKE 'Canon%';
+
+
+
+
 
 --                                SECTION T04
 
