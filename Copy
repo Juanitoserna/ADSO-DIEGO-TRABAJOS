@@ -1,0 +1,34 @@
+-- Función para calcular las ventas totales de un vendedor en un día específico
+DELIMITER //
+CREATE FUNCTION calcular_ventas_dia(id_vendedor INT, fecha_venta DATE) RETURNS FLOAT
+BEGIN
+    DECLARE total_venta FLOAT;
+    SELECT SUM(valor) INTO total_venta
+    FROM ventas
+    WHERE id_vendedor = id_vendedor AND fecha = fecha_venta
+    GROUP BY id_vendedor, fecha;
+    RETURN total_venta;
+END //
+DELIMITER ;
+CREATE PROCEDURE insertar_actualizar_registro_ventas()
+BEGIN
+    DECLARE vendedor_id INT;
+    DECLARE total_vendido FLOAT;
+    DECLARE total_cantidad_productos INT;
+
+    -- Iterar sobre cada vendedor
+    FOR vendedor IN (SELECT id_vendedor FROM vendedores) DO
+        -- Calcular total vendido por el vendedor en el día actual utilizando la función
+        SET total_vendido = calcular_ventas_dia(vendedor.id_vendedor, CURDATE());
+
+        -- Calcular cantidad total de productos vendidos por el vendedor en el día actual
+        SET total_cantidad_productos = (SELECT SUM(cantidad) FROM ventas WHERE id_vendedor = vendedor.id_vendedor AND fecha = CURDATE());
+
+        -- Insertar o actualizar en la tabla registro_ventas
+        INSERT INTO registro_ventas (fecha, id_vendedor, total_vendido, cantidad_productos)
+        VALUES (CURDATE(), vendedor.id_vendedor, total_vendido, total_cantidad_productos)
+        ON DUPLICATE KEY UPDATE
+        total_vendido = VALUES(total_vendido),
+        cantidad_productos = VALUES(cantidad_productos);
+    END FOR;
+END;
