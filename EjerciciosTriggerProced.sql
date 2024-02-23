@@ -40,7 +40,7 @@ INSERT INTO ventas (id_producto, cantidad, fecha_venta) VALUES (1, 3, '2024-02-2
 
 
 
--- Crear un trigger: Si actualiza el precio de un producto se debe registrar el cambio en la tabla HistoricoCambios.
+-- __________________________________ Crear un trigger: Si actualiza el precio de un producto se debe registrar el cambio en la tabla HistoricoCambios. __________________________________
 UPDATE Productos SET Precio = 20.99 WHERE ID = 1;
 DROP TRIGGER actualizar_precio;
 DELIMITER //
@@ -55,7 +55,7 @@ END;
 DELIMITER;
 
 
--- Crear un procedimiento almacenado para calcular el total de ventas de un producto en un rango de fechas.
+--__________________________________ Crear un procedimiento almacenado para calcular el total de ventas de un producto en un rango de fechas.__________________________________
 DROP PROCEDURE totalVentas;
 CREATE PROCEDURE totalVentas(IN producto INT, IN date DATE, OUT date_end DATE)
 BEGIN
@@ -65,29 +65,85 @@ END
 //
 
 
--- Crear un procedimiento almacenado para obtener el producto más vendido en un año determinado.
+-- __________________________________Crear un procedimiento almacenado para obtener el producto más vendido en un año determinado.__________________________________
 DROP PROCEDURE producto_mas_vendido;
 DELIMITER//
 CREATE PROCEDURE producto_mas_vendido(fecha_resivida char(4))
 BEGIN 
     SELECT Productos.nombre, SUM(ventas.cantidad) AS total FROM Productos
     INNER JOIN ventas ON Productos.ID = ventas.id_producto
-    WHERE YEAR(fecha_venta) = 'fecha_resivida'
+    WHERE YEAR(fecha_venta) = YEAR(fecha_resivida)
     GROUP BY id_producto 
     ORDER BY total DESC 
     LIMIT 1;
+END
+//
+DELIMITER ;
+
+
+-- __________________________________ Crear un procedimiento almacenado para obtener el total de ventas por mes. __________________________________
+DELIMITER //
+CREATE PROCEDURE producto_por_mes(mes CHAR(2))
+BEGIN 
+    SELECT SUM(ventas.cantidad * Productos.Precio) AS total_ventas
+    FROM ventas 
+    INNER JOIN Productos ON Productos.ID = ventas.id_producto
+    WHERE MONTH(ventas.fecha_venta) = mes;
 END;
 //
 DELIMITER ;
--- Crear un procedimiento almacenado para obtener el total de ventas por mes.
 
--- Crear un procedimiento almacenado para obtener el total de ventas por  un mes determinado.
+
 
 -- Crear un procedimiento almacenado para calcular el promedio de ventas mensual.
 
--- Crear un procedimiento almacenado para calcular el promedio de ventas mensual de un mes determinado.
+
+
+
+-- __________________________________Crear un procedimiento almacenado para calcular el promedio de ventas mensual de un mes determinado.__________________________________
+DELIMITER //
+
+CREATE PROCEDURE promedio_ventas_mensual(mes CHAR(2))
+BEGIN 
+    DECLARE total_ventas DECIMAL(10, 2);
+    DECLARE total_dias INT;
+    DECLARE promedio DECIMAL(10, 2);
+
+    SELECT IFNULL(SUM(ventas.cantidad * Productos.Precio), 0) INTO total_ventas
+    FROM ventas 
+    INNER JOIN Productos ON Productos.ID = ventas.id_producto
+    WHERE MONTH(ventas.fecha_venta) = mes;
+
+    SELECT DAY(LAST_DAY(CONCAT(YEAR(NOW()), '-', mes, '-01'))) INTO total_dias;
+
+    IF total_dias > 0 THEN
+        SET promedio = total_ventas / total_dias;
+    ELSE
+        SET promedio = 0;
+    END IF;
+
+    SELECT promedio;
+END;
+//
+
+DELIMITER ;
 
 -- Crear un procedimiento almacenado para obtener los productos con ventas superiores a un valor dado.
+DELIMITER //
+
+CREATE PROCEDURE venta_superior(IN valor INT)
+BEGIN 
+    SELECT Productos.nombre, SUM(ventas.cantidad * Productos.Precio) AS total_ventas
+    FROM Productos 
+    INNER JOIN ventas ON Productos.ID = ventas.id_producto
+    GROUP BY Productos.nombre
+    HAVING total_ventas > valor;
+END;
+//
+
+DELIMITER ;
+
+
 
 
 PRODUCTOS
